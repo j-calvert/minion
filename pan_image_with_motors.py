@@ -26,7 +26,7 @@ screen_height = display_info.current_h
 
 # Set up the display
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
-print(f"Screen Dimension: {screen_width} x {screen_height}")
+# print(f"Screen Dimension: {screen_width} x {screen_height}")
 pygame.display.set_caption("Pan Large Image")
 pygame.mouse.set_visible(False)
 
@@ -39,10 +39,10 @@ tile_dir = "tiles"
 pygame.joystick.init()
 joystick_count = pygame.joystick.get_count()
 if joystick_count == 0:
-    print("No joysticks found.")
+    # print("No joysticks found.")
     sys.exit()
 else:
-    print(f"Found {joystick_count} joystick(s). Using the first one.")
+    # print(f"Found {joystick_count} joystick(s). Using the first one.")
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
 
@@ -70,12 +70,12 @@ def stitch_tiles(tiles, start_x, start_y, num_tiles_x, num_tiles_y):
     stitched_surface = pygame.Surface(
         (num_tiles_x * tile_width, num_tiles_y * tile_height)
     )
-    print(f"stitch_tiles({('tiles', start_x, start_y, num_tiles_x, num_tiles_y)})")
-    
+    # print(f"stitch_tiles({('tiles', start_x, start_y, num_tiles_x, num_tiles_y)})")
+
     for y in range(num_tiles_y):
         for x in range(num_tiles_x):
             tile_key = (int(start_x) + x, int(start_y) + y)
-            print(f"Stitching tile {tile_key} at ({x * tile_width}, {y * tile_height})")
+            # print(f"Stitching tile {tile_key} at ({x * tile_width}, {y * tile_height})")
             try:
                 tile = tiles[tile_key]
                 stitched_surface.blit(tile, (x * tile_width, y * tile_height))
@@ -83,6 +83,30 @@ def stitch_tiles(tiles, start_x, start_y, num_tiles_x, num_tiles_y):
                 print(f"An error occurred: {type(e).__name__}: {e}")
 
     return stitched_surface
+
+
+def blit_screen(
+    screen, tiles, start_x, start_y, num_tiles_x, num_tiles_y, pixel_loc_x, pixel_loc_y
+):
+    screen_blit_coords = (
+        -(pixel_loc_x % tile_width),
+        -(pixel_loc_y % tile_height),
+    )
+    for y in range(num_tiles_y):
+        for x in range(num_tiles_x):
+            tile_key = (int(start_x) + x, int(start_y) + y)
+            # print(f"Stitching tile {tile_key} at ({x * tile_width}, {y * tile_height})")
+            try:
+                tile = tiles[tile_key]
+                screen.blit(
+                    tile,
+                    (
+                        x * tile_width + screen_blit_coords[0],
+                        y * tile_height + screen_blit_coords[1],
+                    ),
+                )
+            except Exception as e:
+                print(f"An error occurred: {type(e).__name__}: {e}")
 
 
 tiles = {}
@@ -112,13 +136,13 @@ visible_tiles_x = 1 + screen_width // tile_width
 visible_tiles_y = 1 + screen_height // tile_height
 
 # iniitialize image
-visible_image = stitch_tiles(
-    tiles,
-    current_tile_x - 1,
-    current_tile_y - 1,
-    visible_tiles_x + 1,
-    visible_tiles_y + 1,
-)
+# visible_image = stitch_tiles(
+#     tiles,
+#     current_tile_x - 1,
+#     current_tile_y - 1,
+#     visible_tiles_x + 1,
+#     visible_tiles_y + 1,
+# )
 
 try:
     # Main loop
@@ -141,11 +165,11 @@ try:
         joystick_axis_y = joystick.get_axis(1)  # Left stick Y-axis
 
         if joystick_axis_x < -0.5:
-            print("Left")
+            # print("Left")
             pixel_loc_x_speed = -1 * pan_factor
             pan_motor.throttle = -1 * throttle_factor
         elif joystick_axis_x > 0.5:
-            print("Right")
+            # print("Right")
             pixel_loc_x_speed = pan_factor
             pan_motor.throttle = throttle_factor
         else:
@@ -153,12 +177,12 @@ try:
             pan_motor.throttle = 0
 
         if joystick_axis_y < -0.5:
-            print("Up")
-            pixel_loc_y_speed = pan_factor
+            # print("Up")
+            pixel_loc_y_speed = -1 * pan_factor
             tilt_motor.throttle = -1 * throttle_factor
         elif joystick_axis_y > 0.5:
-            print("Down")
-            pixel_loc_y_speed = -1 * pan_factor
+            # print("Down")
+            pixel_loc_y_speed = pan_factor
             tilt_motor.throttle = throttle_factor
         else:
             pixel_loc_y_speed = 0
@@ -170,27 +194,38 @@ try:
         # Calculate the current x and y tile indices
         current_tile_x = pixel_loc_x // tile_width
         current_tile_y = pixel_loc_y // tile_height
-        if current_tile_x != old_tile_x or current_tile_y != old_tile_y:
-            # Need to stitch a new image
-            print(f"current_tile_x {current_tile_x}")
-            visible_image = stitch_tiles(
+        # if current_tile_x != old_tile_x or current_tile_y != old_tile_y:
+        #     # Need to stitch a new image
+        #     # print(f"current_tile_x {current_tile_x}")
+        #     visible_image = stitch_tiles(
+        #         tiles,
+        #         current_tile_x - 1,
+        #         current_tile_y - 1,
+        #         visible_tiles_x + 1,
+        #         visible_tiles_y + 1,
+        #     )
+
+        if old_pixel_loc_x != pixel_loc_x or old_pixel_loc_y != pixel_loc_y:
+            # Update the display
+            # screen_blit_coords = (
+            #     -(pixel_loc_x % tile_width),
+            #     -(pixel_loc_y % tile_height),
+            # )
+            # print(
+            #     f"pixel_loc_x, pixel_loc_x // tile_width, pixl_loc_y, screen_blit_coords =  {pixel_loc_x}, {pixel_loc_x // tile_width}, {pixel_loc_y}, {screen_blit_coords}"
+            # )
+            # screen.blit(visible_image, screen_blit_coords)
+
+            blit_screen(
+                screen,
                 tiles,
                 current_tile_x - 1,
                 current_tile_y - 1,
                 visible_tiles_x + 1,
                 visible_tiles_y + 1,
+                pixel_loc_x,
+                pixel_loc_y,
             )
-
-        if old_pixel_loc_x != pixel_loc_x or old_pixel_loc_y != pixel_loc_y:
-            # Update the display
-            screen_blit_coords = (
-                - (pixel_loc_x % tile_width),
-                 - (pixel_loc_y % tile_height),
-            )
-            print(
-                f"pixel_loc_x, pixel_loc_x // tile_width, pixl_loc_y, screen_blit_coords =  {pixel_loc_x}, {pixel_loc_x // tile_width}, {pixel_loc_y}, {screen_blit_coords}"
-            )
-            screen.blit(visible_image, screen_blit_coords)
 
             pygame.display.flip()
 
@@ -200,8 +235,8 @@ try:
 
 
 except Exception as e:
-    print(f"An error occurred: {type(e).__name__}: {e}")
-    print("Traceback:")
+    # print(f"An error occurred: {type(e).__name__}: {e}")
+    # print("Traceback:")
     traceback.print_exc()
     pan_motor.throttle = 0
     tilt_motor.throttle = 0
