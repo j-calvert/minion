@@ -1,4 +1,4 @@
-tiles
-reg_tiles
 .vscode
-
+__pycache__
+tiles
+mapbox_access_token.py
