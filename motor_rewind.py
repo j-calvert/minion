@@ -15,7 +15,7 @@ def signal_handler(sig, frame):
 # Register the signal handler
 signal.signal(signal.SIGINT, signal_handler)
 
-motor.throttle = -1
+motor.throttle = 1
 def main_loop():
     while not stop_event.is_set():
         print("Working...")

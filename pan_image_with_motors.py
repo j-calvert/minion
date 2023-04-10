@@ -5,6 +5,7 @@ import time
 import signal
 import os
 import traceback
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -33,18 +34,6 @@ pygame.mouse.set_visible(False)
 
 # Load the large image
 tile_dir = "tiles"
-
-
-# Initialize the joystick
-pygame.joystick.init()
-joystick_count = pygame.joystick.get_count()
-if joystick_count == 0:
-    # print("No joysticks found.")
-    sys.exit()
-else:
-    # print(f"Found {joystick_count} joystick(s). Using the first one.")
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
 
 
 tile_width = 512
@@ -146,6 +135,8 @@ visible_tiles_y = 1 + screen_height // tile_height
 
 try:
     # Main loop
+    mode = 'a'
+    start_time = time.time()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -157,36 +148,63 @@ try:
         # Pan the image
         old_tile_x, old_tile_y = current_tile_x, current_tile_y
 
-        throttle_factor = 0.6
-        pan_factor = 10
+        h_throttle_factor = 1
+        v_throttle_factor = 1
+        h_pan_factor = 40
+        v_pan_factor = 20
 
-        # Handle joystick input
-        joystick_axis_x = joystick.get_axis(0)  # Left stick X-axis
-        joystick_axis_y = joystick.get_axis(1)  # Left stick Y-axis
+        # Pan the image
+        keys = pygame.key.get_pressed()
 
-        if joystick_axis_x < -0.5:
+        if keys[pygame.K_LEFT]:
             # print("Left")
-            pixel_loc_x_speed = -1 * pan_factor
-            pan_motor.throttle = -1 * throttle_factor
-        elif joystick_axis_x > 0.5:
+            mode = 'm'
+            pixel_loc_x_speed = -1 * h_pan_factor
+            pan_motor.throttle = -1 * h_throttle_factor
+        elif keys[pygame.K_RIGHT]:
             # print("Right")
-            pixel_loc_x_speed = pan_factor
-            pan_motor.throttle = throttle_factor
-        else:
+            mode = 'm'
+            pixel_loc_x_speed = h_pan_factor
+            pan_motor.throttle = h_throttle_factor
+        elif mode == 'm':
             pixel_loc_x_speed = 0
             pan_motor.throttle = 0
 
-        if joystick_axis_y < -0.5:
+        if keys[pygame.K_UP]:
             # print("Up")
-            pixel_loc_y_speed = -1 * pan_factor
-            tilt_motor.throttle = -1 * throttle_factor
-        elif joystick_axis_y > 0.5:
+            mode = 'm'
+            pixel_loc_y_speed = -1 * v_pan_factor
+            tilt_motor.throttle = -1 * v_throttle_factor
+        elif keys[pygame.K_DOWN]:
             # print("Down")
-            pixel_loc_y_speed = pan_factor
-            tilt_motor.throttle = throttle_factor
-        else:
+            mode = 'm'
+            pixel_loc_y_speed = v_pan_factor
+            tilt_motor.throttle = v_throttle_factor
+        elif mode == 'm':
             pixel_loc_y_speed = 0
             tilt_motor.throttle = 0
+
+        x_period = 12
+        y_period = 9
+        overall_scale = 1
+        if mode == 'a':
+            current_time = time.time() - start_time
+            x_speed = overall_scale * math.sin(2 * math.pi * current_time / x_period)
+            # y_speed = overall_scale * math.sin(2 * math.pi * current_time / y_period)
+            y_speed = 0
+            pixel_loc_x_speed = x_speed * h_pan_factor
+            pan_motor.throttle = x_speed * h_throttle_factor
+            pixel_loc_y_speed = y_speed * v_pan_factor
+            tilt_motor.throttle = y_speed * v_throttle_factor
+
+        if keys[pygame.K_q]:
+            raise Exception("Quit!")
+        if keys[pygame.K_c]:
+            pixel_loc_x = tile_center_x * tile_width
+            pixel_loc_y = tile_center_y * tile_height
+        if keys[pygame.K_a]:
+            mode = 'a'
+            start_time = time.time()
 
         pixel_loc_x += pixel_loc_x_speed
         pixel_loc_y += pixel_loc_y_speed
@@ -238,11 +256,10 @@ except Exception as e:
     # print(f"An error occurred: {type(e).__name__}: {e}")
     # print("Traceback:")
     traceback.print_exc()
+
+
+finally:
     pan_motor.throttle = 0
     tilt_motor.throttle = 0
-
-
-# finally:
-#     motor.throttle = 0
-#     pygame.quit()
-#     sys.exit()
+    pygame.quit()
+    sys.exit()
