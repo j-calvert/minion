@@ -19,7 +19,7 @@ centers = ['22/672028/1464716/.7/.7',
            '12/656/1430/.2/.3',
            '11/328/715/.1/.2',
            '10/164/357/.06/.6',
-           '9/82/178/.8/.01',
+           '9/82/178/.01/.8',
            '8/41/89/.01/.4',
            '7/20/44/.5/.7',
            '6/10/22/.3/.2',]
@@ -27,11 +27,12 @@ centers = ['22/672028/1464716/.7/.7',
 tile_width = 512
 tile_height = 512
 
-tile_range = 16
+# Just the first few for zippy zooming regardless of style
+tile_range = 2
 
 
 def parse_center(center):
     center = center.split('/')
-    print(center)
-    return (int(center[0]), int(center[1]), int(center[2]), int(
-        tile_width * float(center[3])), int(tile_height * float(center[4])))
+    return (int(center[0]),
+            int(tile_width * (int(center[1]) + float(center[3]))),
+            int(tile_height * (int(center[2]) + float(center[4]))))
