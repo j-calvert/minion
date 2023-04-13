@@ -1,8 +1,8 @@
-styles = ['streets-v12',
+styles = [ # 'streets-v12',
           'outdoors-v12',
-          'satellite-v9',
+        #   'satellite-v9',
           'satellite-streets-v12',
-          'navigation-day-v1',
+        #   'navigation-day-v1',
           'navigation-night-v1',]
 
 

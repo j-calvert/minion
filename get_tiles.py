@@ -46,7 +46,7 @@ def get_tile(style, zoom_level, x, y):
     if response.status_code == 200:
         with open(tile_path, "wb") as f:
             f.write(response.content)
-        print(f"Downloaded tile {tile_path}")
+        # print(f"Downloaded tile {tile_path}")
     else:
         print(
             f"Error downloading tile {tile_path}: {response.status_code}")
